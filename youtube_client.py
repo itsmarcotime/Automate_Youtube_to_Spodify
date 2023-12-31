@@ -1,6 +1,6 @@
 import os
-import google_auth_oauthlib
-import googleapiclient
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
 import youtube_dl
 
 class PlayList(object):
@@ -8,11 +8,10 @@ class PlayList(object):
         self.id = id
         self.title = title
 
-
-class Track(object):
-    def __init__(self, artist, song):
+class Song(object):
+    def __init__(self, artist, track):
         self.artist = artist
-        self.song = song
+        self.track = track
 
 class YoutubeClient(object):
     def __init__(self, credentials_location):
@@ -26,8 +25,7 @@ class YoutubeClient(object):
         api_version = "v3"
 
         # Get credentials and create an API client
-        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
-            credentials_location, scopes)
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(credentials_location, scopes)
         credentials = flow.run_console()
         youtube_client = googleapiclient.discovery.build(api_service_name, api_version, credentials=credentials)
 
@@ -58,9 +56,9 @@ class YoutubeClient(object):
 
         for i in response['items']:
             video_id = i['snippet']['resourseId']['videoId']
-            artist, song = get_artist_and_song_from_video(video_id)
-            if artist and song:
-                return songs.append(Track(artist, song))
+            artist, track = self.get_artist_and_song_from_video(video_id)
+            if artist and track:
+                return songs.append(Song(artist, track))
             
         return songs
 
@@ -72,6 +70,6 @@ class YoutubeClient(object):
         )
 
         artist = video['artist']
-        song = video['track']
+        track = video['track']
 
-        return artist, song
+        return artist, track
